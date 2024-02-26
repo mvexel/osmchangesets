@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "osmchangesets"
+version = "0.0.1"
+description = "An API to query and use OpenStreetMap changeset data"
+authors = ["Martijn van Exel <m@rtijn.org>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pyproj = "^3.6.1"
+requests = "^2.31.0"
+iso8601 = "^2.1.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^8.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
