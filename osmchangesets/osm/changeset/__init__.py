@@ -116,6 +116,12 @@ class Changeset:
                 changeset.get("closed_at", None)
             )
 
+        # bounds can be defined by minlat, minlon, maxlat, maxlon or min_lat, min_lon, max_lat, max_lon depending on the API call
+        if "minlat" in changeset:
+            changeset["min_lat"] = changeset.pop("minlat")
+            changeset["min_lon"] = changeset.pop("minlon")
+            changeset["max_lat"] = changeset.pop("maxlat")
+            changeset["max_lon"] = changeset.pop("maxlon")
         return cls(
             osm_id=changeset.get("id", None),
             created_at=changeset.get("created_at", None),

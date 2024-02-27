@@ -51,10 +51,10 @@ def test_changeset_from_json():
     assert not changeset.is_open
     assert changeset.user == "mvexel"
     assert changeset.uid == 8909
-    assert changeset.minlat == 40.7402267
-    assert changeset.minlon == -111.817534
-    assert changeset.maxlat == 40.740355
-    assert changeset.maxlon == -111.817531
+    assert changeset.bounds.minlat == 40.7402267
+    assert changeset.bounds.minlon == -111.817534
+    assert changeset.bounds.maxlat == 40.740355
+    assert changeset.bounds.maxlon == -111.817531
     assert changeset.comments_count == 0
     assert changeset.changes_count == 5
     assert len(changeset.tags) == 8
@@ -62,6 +62,6 @@ def test_changeset_from_json():
         assert_type(tag, Tag)
         assert tag.key
 
-    assert_type(changeset.area, float | None)
-    if changeset.area is not None:
-        assert changeset.area > 0
+    assert_type(changeset.bounds.area, float)
+    if changeset.bounds.area is not None:
+        assert changeset.bounds.area > 0
