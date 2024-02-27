@@ -1,19 +1,31 @@
-[tool.poetry]
+[tool.pdm]
+distribution = true
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "pytest<9.0.0,>=8.0.0",
+]
+
+[tool.pdm.build]
+includes = []
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[project]
 name = "osmchangesets"
 version = "0.0.2"
 description = "An API to query and use OpenStreetMap changeset data"
-authors = ["Martijn van Exel <m@rtijn.org>"]
+authors = [
+    {name = "Martijn van Exel", email = "m@rtijn.org"},
+]
+dependencies = [
+    "pyproj<4.0.0,>=3.6.1",
+    "requests<3.0.0,>=2.31.0",
+    "iso8601>=2.1.0",
+]
+requires-python = "<4.0,>=3.12"
 readme = "README.md"
+license = {text = "MIT"}
 
-[tool.poetry.dependencies]
-python = "^3.12"
-pyproj = "^3.6.1"
-requests = "^2.31.0"
-iso8601 = "^2.1.0"
-
-[tool.poetry.dev-dependencies]
-pytest = "^8.0.0"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"

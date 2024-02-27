@@ -13,6 +13,8 @@ Some of the topics I'll be studying:
 - [PEP 572 – Assignment Expressions](https://peps.python.org/pep-0572/) (Introduced in 3.8)
 - [PEP 570 – Python Positional-Only Parameters](https://peps.python.org/pep-0570/) (Introduced in 3.8)
 - [pyproject.toml specification](https://packaging.python.org/en/latest/specifications/pyproject-toml/#pyproject-toml-spec)
+- [Testing](https://realpython.com/python-testing/) in general
+
 
 ## Installing
 
