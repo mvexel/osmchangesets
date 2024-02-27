@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 from dataclasses import dataclass
 from typing import Self, ClassVar
@@ -14,6 +15,60 @@ class InvalidChangesetJson(ChangesetError):
 
 
 @dataclass
+class Bounds:
+    minlat: float
+    minlon: float
+    maxlat: float
+    maxlon: float
+
+    @property
+    def is_valid(self) -> bool:
+        return (
+            self.minlat is not None
+            and self.minlon is not None
+            and self.maxlat is not None
+            and self.maxlon is not None
+            and self.maxlat - self.minlat > 0
+            and self.maxlon - self.minlon > 0
+        )
+
+    @property
+    def area(self) -> float:
+        if not self.is_valid:
+            return 0.0
+
+        from pyproj import Geod
+
+        geod = Geod(ellps="WGS84")
+        lons = [self.minlon, self.maxlon, self.maxlon, self.minlon]
+        lats = [self.minlat, self.minlat, self.maxlat, self.maxlat]
+        area, _ = geod.polygon_area_perimeter(lons, lats)
+        return area
+
+    @property
+    def wkt(self) -> str | None:
+        if not self.is_valid:
+            return None
+
+        return f"POLYGON(({self.minlon} {self.minlat},{self.maxlon} {self.minlat},{self.maxlon} {self.maxlat},{self.minlon} {self.maxlat},{self.minlon} {self.minlat}))"
+
+    @property
+    def geojson(self) -> dict:
+        return {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [self.minlon, self.minlat],
+                    [self.maxlon, self.minlat],
+                    [self.maxlon, self.maxlat],
+                    [self.minlon, self.maxlat],
+                    [self.minlon, self.minlat],
+                ]
+            ],
+        }
+
+
+@dataclass
 class Tag:
     changeset_id: ClassVar[int]
     key: str
@@ -26,61 +81,55 @@ class Tag:
 @dataclass
 class Changeset:
     osm_id: int
-    created_at: int
-    closed_at: int
-    open: bool
+    created_at: datetime
+    closed_at: datetime
+    is_open: bool
     user: str
     uid: int
-    minlat: float
-    minlon: float
-    maxlat: float
-    maxlon: float
+    bounds: Bounds
     comments_count: int
     changes_count: int
     tags: list[Tag]
 
     @classmethod
     def from_osm_api_json(cls, data: str) -> Self:
-        try:
-            changeset = json.loads(data).get("elements")[0]
-        except (KeyError, IndexError):
-            raise InvalidChangesetJson(data)
+        # this could be a dict or a string
+        if isinstance(data, dict):
+            changeset = data
+        else:
+            try:
+                changeset = json.loads(data).get("elements")[0]
+            except (KeyError, IndexError):
+                try:
+                    changeset = json.loads(data)
+                except (KeyError, IndexError):
+                    raise InvalidChangesetJson
 
         # parse ISO8601 dates
         if "created_at" in changeset:
-            changeset["created_at"] = iso8601.parse_date(changeset["created_at"])
+            changeset["created_at"] = iso8601.parse_date(
+                changeset.get("created_at", None)
+            )
 
         if "closed_at" in changeset:
-            changeset["closed_at"] = iso8601.parse_date(changeset["closed_at"])
+            changeset["closed_at"] = iso8601.parse_date(
+                changeset.get("closed_at", None)
+            )
 
         return cls(
-            osm_id=changeset["id"],
-            created_at=changeset["created_at"],
-            closed_at=changeset["closed_at"],
-            open=changeset["open"],
-            user=changeset["user"],
-            uid=changeset["uid"],
-            minlat=changeset["minlat"],
-            minlon=changeset["minlon"],
-            maxlat=changeset["maxlat"],
-            maxlon=changeset["maxlon"],
-            comments_count=changeset["comments_count"],
-            changes_count=changeset["changes_count"],
-            tags=[
-                Tag(key=k, value=v)
-                for k, v in changeset.get("tags", {}).items()
-            ],
+            osm_id=changeset.get("id", None),
+            created_at=changeset.get("created_at", None),
+            closed_at=changeset.get("closed_at", None),
+            is_open=changeset.get("open", False),
+            user=changeset.get("user", None),
+            uid=changeset.get("uid", None),
+            bounds=Bounds(
+                minlat=changeset.get("min_lat", None),
+                minlon=changeset.get("min_lon", None),
+                maxlat=changeset.get("max_lat", None),
+                maxlon=changeset.get("max_lon", None),
+            ),
+            comments_count=changeset.get("comments_count", 0),
+            changes_count=changeset.get("changes_count", 0),
+            tags=[Tag(key=k, value=v) for k, v in changeset.get("tags", {}).items()],
         )
-
-    @property
-    def area(self) -> float | None:
-        if not all([self.minlat, self.minlon, self.maxlat, self.maxlon]):
-            return None
-
-        from pyproj import Geod
-
-        geod = Geod(ellps="WGS84")
-        lons = [self.minlon, self.maxlon, self.maxlon, self.minlon]
-        lats = [self.minlat, self.minlat, self.maxlat, self.maxlat]
-        area, _ = geod.polygon_area_perimeter(lons, lats)
-        return area

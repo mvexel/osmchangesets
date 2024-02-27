@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "osmchangesets"
-version = "0.0.1"
+version = "0.0.2"
 description = "An API to query and use OpenStreetMap changeset data"
 authors = ["Martijn van Exel <m@rtijn.org>"]
 readme = "README.md"

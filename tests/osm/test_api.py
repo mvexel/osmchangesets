@@ -56,7 +56,7 @@ def test_get_changeset_from_api(mock_get):
     assert changeset.osm_id == 147937232
     assert changeset.created_at == iso8601.parse_date("2024-02-26T15:30:59Z")
     assert changeset.closed_at == iso8601.parse_date("2024-02-26T15:30:59Z")
-    assert not changeset.open
+    assert not changeset.is_open
     assert changeset.user == "mvexel"
     assert changeset.uid == 8909
     assert changeset.minlat == 40.7402267
